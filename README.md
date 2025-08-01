@@ -21,17 +21,68 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+# Gestion de Proyectos - Backend (NestJS)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Una breve descripción de tu proyecto, su propósito y las principales funcionalidades que ofrece el backend.
 
-## Project setup
+---
 
+## Tabla de Contenidos
+
+- [Tecnologías](#1-tecnologías)
+- [Instalación](#2-instalación)
+- [Scripts de Ejecución](#3-scripts-de-ejecución)
+- [Configuración de la Base de Datos](#4-configuración-de-la-base-de-datos)
+- [Autenticación](#5-autenticación)
+- [Endpoints de la API](#6-endpoints-de-la-api)
+- [Contenedorización](#7-contenedorización)
+- [Despliegue](#8-despliegue)
+- [Contacto](#9-contacto)
+
+---
+
+## 1. Tecnologías
+
+Este proyecto de backend está construido con las siguientes tecnologías:
+
+- **Framework:** NestJS  
+- **Lenguaje:** TypeScript  
+- **Base de datos:** PostgreSQL  
+- **ORM:** TypeORM  
+- **Autenticación:** JWT (JSON Web Tokens)
+
+---
+
+## 2. Instalación
+
+Sigue estos pasos para configurar el proyecto localmente.
+
+Clona el repositorio:
 ```bash
-$ npm install
+git clone https://github.com/AdilsonCuevas/gestor_project_backend.git
+```
+Navegar al directorio:
+```bash
+cd [nombre-del-proyecto-backend]
+```
+instalar dependencias:
+```bash
+npm install
 ```
 
-## Compile and run the project
+instalaciones importantes una a una:
+```bash
+# PostgreSQL + TypeORM
+npm install @nestjs/typeorm typeorm pg
+
+# JWT Auth
+npm install @nestjs/jwt passport-jwt @nestjs/passport passport bcrypt
+npm install --save-dev @types/passport-jwt @types/bcrypt
+```
+
+## 3. Scripts de Ejecución
+
+Ejecucion
 
 ```bash
 # development
@@ -44,7 +95,7 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
-## Run tests
+ Testing
 
 ```bash
 # unit tests
@@ -57,42 +108,72 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
-## Deployment
+## 4. Configuración de la Base de Datos
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+El proyecto utiliza PostgreSQL. Asegúrate de tener una instancia en ejecución y de configurar las variables de entorno.
+recuerda que las viarables de entorno son los datos de conexion a la base de datos y cables secretas de JWT
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Variables de Entorno
 
+Crea un archivo .env en la raíz del proyecto con la siguiente estructura:
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+PORT=4000
+
+DB_TYPE=*****
+DB_HOST=*****
+DB_PORT=5432
+DB_USER=*****
+DB_PASSWORD=*****
+DB_NAME=*****
+
+CORS_ORIGIN=*****  //URL DE FRONT
+
+JWT_SECRET=*****
+JWT_REFRESH=*****
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## 5. Autenticación
 
-## Resources
+El sistema de autenticación se gestiona a través de JWT. Los tokens se firman con la clave secreta definida en las variables de entorno.
 
-Check out a few resources that may come in handy when working with NestJS:
+- POST /auth/login: Para iniciar sesión.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+- POST /auth/register: Para registrar un nuevo usuario.
 
-## Support
+  ## 6. Endpoints de la API
+```bash
+| Método | Endpoint            | Descripción                             |
+| ------ | ------------------- | --------------------------------------- |
+| POST   | /auth/register      | Crea un nuevo usuario.                  |
+| POST   | /auth/login         | Autentica un usuario y devuelve un JWT. |
+| GET    | /auth/profile       | Perfil del usuario autenticado .        |
+| GET    | /projects           | Obtiene la lista de productos.          |
+| POST   | /projects           | Crea un nuevo producto.                 |
+| GET    | /projects/:id       | Obtener proyecto específico.            |
+| PUT    | /projects/:id       | Actualizar UN proyecto.                 |
+| DELETE | /projects/:id       | Eliminar un proyecto.                   |
+| GET    | /projects/:id/tasks | Obtener lista de tareas.                |
+| POST   | /projects/:id/tasks | Crear tarea a un proyectp.              |
+| PUT    | /tasks/:id          | Actualizar tarea.                       |
+| DELETE | /tasks/:id          | Elimiar una tarea.                      |
+| GET    | /users              | Obtener lista de usuarios.              |
+| POST   | /users              | Crea un nuevo usuario.                  |
+| PUT    | /users/:id          | Actualizar usuario.                     |
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## 7. Contenedorización
+Se proporciona un Dockerfile para crear una imagen de Docker del proyecto.
 
-## Stay in touch
+Construye la imagen:
+```bash
+docker build -t nombre-del-proyecto-backend .
+```
+Ejecutar contenedor
+```bash
+docker run -p 3000:3000 -d nombre-del-proyecto-backend
+```
+## 8. Despliegue
+El backend está desplegado en Railway. Las variables de entorno se configuran directamente en el panel de control de Railway.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## 9. Contacto
+Si tienes alguna pregunta o sugerencia, no dudes en contactarme en cuevasadilson@gmail.com
