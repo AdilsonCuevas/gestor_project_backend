@@ -5,11 +5,13 @@ import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUsuarioDto } from 'src/users/dto/users.dto';
 import { usuario } from 'src/users/entity/user.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BadRequestException } from '@nestjs/common';
 import { hash } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
+import { proyecto } from 'src/projects/entity/proyecto.entity';
+import { Task } from 'src/tasks/entity/tareas.entity';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +20,12 @@ export class AuthService {
     private configService: ConfigService,
     @InjectRepository(usuario)
     private usuarioRepository: Repository<usuario>,
+
+    @InjectRepository(proyecto)
+    private proyectoRepository: Repository<proyecto>,
+
+    @InjectRepository(Task)
+    private tasksRepository: Repository<Task>,
   ) { }
 
   async login(dto: LoginDto) {
@@ -96,9 +104,63 @@ export class AuthService {
     };
   }
 
-  async profile() {
+  async dashboard(role: string, email: string) {
+    let users: usuario[] = [];
+    let projects: proyecto[] = [];
+    let tasks: Task[] = [];
+    const user = await this.usuarioRepository.findOne({ where: { email: email } });
 
+    switch (role) {
+      case 'manager':
+        users = await this.usuarioRepository.find();
+        projects = await this.proyectoRepository.find({ where: { managerId: { id: user?.id }, } });
+        const projectIds = projects.map(p => p.id);
+        tasks = await this.tasksRepository.find({
+          where: {
+            projectId: In(projectIds),
+          },
+        });
+        break;
+      case 'developer':
+        users = await this.usuarioRepository.find();
+        tasks = await this.tasksRepository.find({ where: { assignedTo: { id: user?.id }, } });
+        const projectId = tasks.map(p => p.projectId);
+        projects = await this.proyectoRepository.find({
+          where: {
+            id: In(projectId),
+          },
+        });
+        break;
+      case 'admin':
+        users = await this.usuarioRepository.find();
+        projects = await this.proyectoRepository.find();
+        tasks = await this.tasksRepository.find();
+        break;
+
+      default:
+        throw new BadRequestException("No se envió un rol válido");
+    }
+    return {
+      tasks: tasks.map(task => ({
+        id: task.id,
+        status: task.status,
+        title: task.title,
+        projectId: task.projectId.id,
+        assignedTo: task.assignedTo.id,
+      })),
+      project: projects.map(p => ({
+        name: p.name,
+        status: p.status,
+        managerId: p.managerId.id,
+      })),
+      users: users.map(u => ({
+        id: u.id,
+        name: u.name,
+        role: u.role,
+      })),
+    };
   }
+
 
   async findByEmail(email: string) {
     return await this.usuarioRepository.findOne({

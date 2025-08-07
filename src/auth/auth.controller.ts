@@ -1,5 +1,5 @@
 import { AuthService } from './auth.service';
-import { Body, Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Query, Post, Request, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { LoginDto } from './dto/auth.dto';
 import { RefreshJwtGuard } from './guards/refresh.guards';
@@ -35,6 +35,15 @@ export class AuthController {
     @Get('profile')
     @ApiOperation({ summary: 'Visualisar informacion del usuario loggeado' })
     async profile() {
-        return await this.authService.profile();
+        //return await this.authService.profile();
+    }
+
+    @UseGuards(JwtGuard)
+    @Get('dashboard')
+    @ApiOperation({ summary: 'LIstar Usuarios por paginacion' })
+    async dashboard(@Query('role') role: string,
+        @Query('email') email: string
+    ) {
+        return await this.authService.dashboard(role, email);
     }
 }
